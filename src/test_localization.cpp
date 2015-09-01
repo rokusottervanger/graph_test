@@ -32,18 +32,29 @@ int main(int argc, char** argv)
         return 1;
     }
 
+
     // Configure sim and graph
     // -------------------------
 
     world.configure(config);
     graph.configure(config);
 
+
     // Test findNodeByID
     // -------------------------
 
     graph_map::Node* n1 = graph.findNodeByID("box1");
     graph_map::Node* n2 = graph.findNodeByID("box2");
+
+
+    // Test Dijkstra
+    // -------------------------
+
     graph_map::Path path = graph.Dijkstra(n1,n2);
+
+
+    // Main Loop
+    // -------------------------
 
     while (true)
     {
