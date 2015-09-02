@@ -56,7 +56,7 @@ void World::configure(tue::Configuration &config)
             obj.pose = pose;
             addObject(obj);
 
-            std::cout << "Added object: id = '" << id << "', pose = " << pose << std::endl;
+            std::cout << "[SIM] Added object: id = '" << id << "', pose = " << pose << std::endl;
 
         }
 
@@ -66,7 +66,7 @@ void World::configure(tue::Configuration &config)
 
 Measurements World::step()
 {
-    std::cout << "Stepping simulator" << std::endl;
+    std::cout << "[SIM] Stepping simulator" << std::endl;
 
     Measurements measurements;
 
