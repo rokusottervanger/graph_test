@@ -6,7 +6,6 @@ objects:
             min: { x: -0.5, y: -0.4, z: -0.5 }
             max: { x:  0.5, y:  0.4, z:  0.5 }
   - id: "box2"
-    graph_enabled: 1
     enabled: 1
     pose: {x: 2, y: 0, z: 0.8, yaw: 0.5}
     shape:
@@ -14,16 +13,8 @@ objects:
             min: { x:  -0.4, y: -0.3, z: -0.8 }
             max: { x:  -0.4, y:  0.3, z:  0.8 }
   - id: "box3"
-    graph_enabled: 0
     pose: {x: -2, y: 0, z: 0.8, yaw: 0}
     shape:
       - box:
             min: { x:  -0.4, y: -0.4, z: -0.6 }
             max: { x:  -0.4, y:  0.4, z:  0.6 }
-relations:
-  - n1: "box1"
-    n2: "box2"
-    pose: {x: 2, y: 0, z: 0.8, yaw: 0} # Can be different from the actual pose
-#  - n1: "box1"
-#    n2: "box2"
-#    pose: {x: 2, y: 0, z: 0.8, yaw: 0}

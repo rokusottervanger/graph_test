@@ -9,7 +9,7 @@ using namespace graph_map;
 
 int main(int argc, char** argv)
 {
-    tue::Configuration config;
+    tue::Configuration sim_config, graph_config;
     graph_map::World world = graph_map::World();
     graph_map::Graph graph = graph_map::Graph();
 
@@ -17,18 +17,27 @@ int main(int argc, char** argv)
     // Load configuration file
     // -------------------------
 
-    if ( argc < 2 )
+    if ( argc < 3 )
     {
-        std::cout << "Please provide simulator configuration file as input" << std::endl;
+        std::cout << "Usage: \n\n    test_localization SIMULATOR_CONFIG_FILE.yaml GRAPH_CONFIG_FILE.yaml" << std::endl;
         return 1;
     }
 
-    std::string yaml_filename = argv[1];
-    config.loadFromYAMLFile(yaml_filename);
+    std::string sim_config_filename = argv[1];
+    sim_config.loadFromYAMLFile(sim_config_filename);
 
-    if (config.hasError())
+    std::string graph_config_filename = argv[2];
+    graph_config.loadFromYAMLFile(graph_config_filename);
+
+    if (sim_config.hasError())
     {
-        std::cout << std::endl << "Could not load configuration file:" << std::endl << std::endl << config.error() << std::endl;
+        std::cout << std::endl << "Could not load configuration file:" << std::endl << std::endl << sim_config.error() << std::endl;
+        return 1;
+    }
+
+    if (graph_config.hasError())
+    {
+        std::cout << std::endl << "Could not load configuration file:" << std::endl << std::endl << graph_config.error() << std::endl;
         return 1;
     }
 
@@ -36,8 +45,8 @@ int main(int argc, char** argv)
     // Configure sim and graph
     // -------------------------
 
-    world.configure(config);
-    if (!graph.configure(config))
+    world.configure(sim_config);
+    if (!graph.configure(graph_config))
         return 1;
 
 
@@ -86,7 +95,8 @@ int main(int argc, char** argv)
     // Measurement result can be object pose (?)
 
     // TODO:
-    //  - Split up config for graph from that of sim
+    //  - Visualization of sim world (ground truth)
+    //  - Visualization of best estimate (graph)
 
     std::cout << "Hello world" << std::endl;
 

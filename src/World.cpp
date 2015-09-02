@@ -48,6 +48,10 @@ void World::configure(tue::Configuration &config)
             else
                 continue;
 
+            // - - - - - - - - - - - - - - - - - - - - - - - -
+            // Add features
+
+            // todo: add features based on geometry described in config
 
             // - - - - - - - - - - - - - - - - - - - - - - - -
             // Add object
