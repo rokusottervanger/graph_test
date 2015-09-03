@@ -7,6 +7,24 @@
 
 using namespace graph_map;
 
+/*
+ * TODOs:
+
+-   Run simulator (gives object poses for now)
+    *   Generate measurements based on objects in sim world and
+        simulated robot pose (but what should they look like,
+        and when should measurements be created? Only when the
+        robot looks at the object? When does the robot look at objects?)
+-   Run graph update. Based on new measurements:
+    *   Add new objects
+    *   Improve existing relations
+    *   Add new relations
+-   Visualization of sim world (ground truth)
+-   Visualization of best estimate (graph)
+
+*/
+
+
 int main(int argc, char** argv)
 {
     tue::Configuration sim_config, graph_config;
@@ -31,13 +49,13 @@ int main(int argc, char** argv)
 
     if (sim_config.hasError())
     {
-        std::cout << std::endl << "Could not load configuration file:" << std::endl << std::endl << sim_config.error() << std::endl;
+        std::cout << std::endl << "Could not load simulator configuration file:" << std::endl << std::endl << sim_config.error() << std::endl;
         return 1;
     }
 
     if (graph_config.hasError())
     {
-        std::cout << std::endl << "Could not load configuration file:" << std::endl << std::endl << graph_config.error() << std::endl;
+        std::cout << std::endl << "Could not load graph configuration file:" << std::endl << std::endl << graph_config.error() << std::endl;
         return 1;
     }
 
@@ -58,6 +76,15 @@ int main(int argc, char** argv)
     std::cout << "Found nodes by ID:" << std::endl;
     std::cout << n1->id << std::endl << n2->id << std::endl;
 
+
+    // Add robot to graph
+    // -------------------------
+
+    graph_map::Node* robot = graph.addNode("robot");
+    geo::Pose3D initial_guess = geo::Pose3D(2.0,0,0,0,0,0);
+    graph.addEdge(robot,n1,initial_guess);
+
+
     // Test Dijkstra
     // -------------------------
 
@@ -66,39 +93,21 @@ int main(int argc, char** argv)
 
     std::cout << path.toString() << std::endl;
 
-    std::cout << "Starting main loop" << std::endl;
+//    std::cout << "Starting main loop" << std::endl;
 
 
     // Main Loop
     // -------------------------
 
-    while (true)
-    {
-        graph_map::Measurements measurements = world.step();
+//    while (true)
+//    {
+//        graph_map::Measurements measurements = world.step();
 
-        graph.update(measurements);
+//        graph.update(measurements);
 
-        usleep(0.2e6); // Not 5 Hz!!! todo: make this really 0.2s instead of 0.2s+calculation time...
-    }
-
-    // Give initial guess for robot pose (add robot to graph)
-
-    // Step:
-    //  - Run simulator (gives object poses for now)
-    //      * Generate measurements based on objects in sim world and simulated robot pose
-    //  - Run graph update
-    //      * Add new objects
-    //      * Improve existing relations
-    //      * Add new relations
-
-    // Generate measurements based on simulator state
-    // Measurement result can be object pose (?)
-
-    // TODO:
-    //  - Visualization of sim world (ground truth)
-    //  - Visualization of best estimate (graph)
-
-    std::cout << "Hello world" << std::endl;
+//        usleep(0.2e6); // Not 5 Hz!!! todo: make this really 0.2s instead of 0.2s+calculation time...
+//        // todo: only localize when you have a task, right?
+//    }
 
     return 0;
 }

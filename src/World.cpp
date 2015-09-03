@@ -1,7 +1,14 @@
 #include "graph_test/World.h"
 
+#include <visualization_msgs/MarkerArray.h>
+
 namespace graph_map
 {
+
+//World::World(): nh_("~")
+//{
+//    nh_.advertise<visualization_msgs::MarkerArray>("graph_test/sim/viz",1,true);
+//}
 
 void World::addObject(Object object)
 {
@@ -22,7 +29,7 @@ void World::configure(tue::Configuration &config)
             if (config.value("enabled", enabled, tue::OPTIONAL) && !enabled)
                 continue;
 
-            std::string id;
+            std::string id = "";
             if (!config.value("id", id))
                 continue;
 
@@ -49,28 +56,79 @@ void World::configure(tue::Configuration &config)
                 continue;
 
             // - - - - - - - - - - - - - - - - - - - - - - - -
-            // Add features
+            // Add shape
 
-            // todo: add features based on geometry described in config
+            std::string type;
+            if (config.value("type", type))
+            {
+                if (type == "amigo")
+                {
+                    std::cout << "TODO: Load amigo into simulator object" << std::endl;
+                    // Load amigo into object
+                }
+                else
+                {
+                    std::cout << "Object '" << id << "'' has unknown object type '" << type << "'" << std::endl;
+                }
+            }
+            else if (config.readArray("shape",tue::OPTIONAL))
+            {
+                while (config.nextArrayItem())
+                {
+                    if (config.readGroup("box",tue::OPTIONAL))
+                    {
+                        geo::Vector3 min, max;
 
-            // - - - - - - - - - - - - - - - - - - - - - - - -
-            // Add object
+                        if (config.readGroup("min"))
+                        {
+                            config.value("x", min.x);
+                            config.value("y", min.y);
+                            config.value("z", min.z);
+                            config.endGroup();
+                        }
 
-            obj.id = id;
-            obj.pose = pose;
-            addObject(obj);
+                        if (config.readGroup("max"))
+                        {
+                            config.value("x", max.x);
+                            config.value("y", max.y);
+                            config.value("z", max.z);
+                            config.endGroup();
+                        }
 
-            std::cout << "[SIM] Added object: id = '" << id << "', pose = " << pose << std::endl;
+                        geo::Box box(min,max);
 
+                        obj.shape = box;
+                        std::cout << "Set box as shape of entity '" << id << "'" << std::endl;
+
+                        config.endGroup();
+                    }
+                    else
+                    {
+                        std::cout << "Shape definition of object with id '" << id << "' unknown. Not adding a shape to the entity." << std::endl;
+                    }
+                }
+
+                // todo: add features based on geometry described in config
+
+                // - - - - - - - - - - - - - - - - - - - - - - - -
+                // Add object
+
+                obj.id = id;
+                obj.pose = pose;
+                addObject(obj);
+
+                std::cout << "[SIM] Added object: id = '" << id << "', pose = " << pose << std::endl;
+                config.endArray();
+            }
         }
-
-        config.endArray();
     }
 }
 
 Measurements World::step()
 {
     std::cout << "[SIM] Stepping simulator" << std::endl;
+
+
 
     Measurements measurements;
 

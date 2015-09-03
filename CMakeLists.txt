@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(graph_test)
 
 find_package(catkin REQUIRED COMPONENTS
+    roscpp
     graph_map
     geolib2
     tue_config
@@ -70,5 +71,10 @@ add_executable(test_localization
     ${HEADER_FILES}
 )
 target_link_libraries(test_localization ${catkin_LIBRARIES})
+
+#add_executable(rviz_publisher
+#    src/rviz_publisher.cpp
+#)
+#target_link_libraries(rviz_publisher ${catkin_LIBRARIES})
 
 

@@ -5,6 +5,7 @@
 #include <geolib/Box.h>
 #include <tue/config/configuration.h>
 #include <graph_map/Measurement.h>
+#include <ros/node_handle.h>
 
 // -----------------------------------------------------------------------------------------------
 // Ad Hoc simulator
@@ -35,6 +36,8 @@ public:
 
 private:
     std::vector<Object> objects_;
+
+//    ros::NodeHandle nh_;
 };
 
 }
