@@ -71,16 +71,16 @@ int main(int argc, char** argv)
     // Test findNodeByID
     // -------------------------
 
-    graph_map::Node* n1 = graph.findNodeByID("box1");
-    graph_map::Node* n2 = graph.findNodeByID("box2");
+    int n1 = graph.findNodeByID("box1");
+    int n2 = graph.findNodeByID("box2");
     std::cout << "Found nodes by ID:" << std::endl;
-    std::cout << n1->id << std::endl << n2->id << std::endl;
+    std::cout << graph.getNode(n1).id << std::endl << graph.getNode(n2).id << std::endl;
 
 
     // Add robot to graph
     // -------------------------
 
-    graph_map::Node* robot = graph.addNode("robot");
+    int robot = graph.addNode("robot");
     geo::Pose3D initial_guess = geo::Pose3D(2.0,0,0,0,0,0);
     graph.addEdge(robot,n1,initial_guess);
 
@@ -88,10 +88,10 @@ int main(int argc, char** argv)
     // Test Dijkstra
     // -------------------------
 
-    graph_map::Path path = graph.Dijkstra(n1,n2);
-    std::cout << "Ran Dijkstra with result:" << std::endl;
+//    graph_map::Path path = graph.Dijkstra(n1,n2);
+//    std::cout << "Ran Dijkstra with result:" << std::endl;
 
-    std::cout << path.toString() << std::endl;
+//    std::cout << path.toString() << std::endl;
 
 //    std::cout << "Starting main loop" << std::endl;
 
