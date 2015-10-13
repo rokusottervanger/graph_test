@@ -11,10 +11,12 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>graph_map</build_depend>
+  <build_depend>triplet_graph</build_depend>
   <build_depend>geolib2</build_depend>
   <build_depend>tue_config</build_depend>
 
   <run_depend>graph_map</run_depend>
+  <run_depend>triplet_graph</run_depend>
   <run_depend>geolib2</run_depend>
   <run_depend>tue_config</run_depend>
 

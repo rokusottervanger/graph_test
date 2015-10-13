@@ -4,6 +4,7 @@ project(graph_test)
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     graph_map
+    triplet_graph
     geolib2
     tue_config
 )
@@ -67,6 +68,7 @@ file(GLOB_RECURSE HEADER_FILES include/*.h)
 
 add_executable(test_localization
     src/test_localization.cpp
+    src/test_triplet_graph.cpp
     src/World.cpp
     ${HEADER_FILES}
 )
