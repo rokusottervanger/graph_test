@@ -68,11 +68,16 @@ file(GLOB_RECURSE HEADER_FILES include/*.h)
 
 add_executable(test_localization
     src/test_localization.cpp
-    src/test_triplet_graph.cpp
     src/World.cpp
     ${HEADER_FILES}
 )
 target_link_libraries(test_localization ${catkin_LIBRARIES})
+
+add_executable(test_triplet_graph
+    src/test_triplet_graph.cpp
+    src/World.cpp
+)
+target_link_libraries(test_triplet_graph ${catkin_LIBRARIES})
 
 #add_executable(rviz_publisher
 #    src/rviz_publisher.cpp
