@@ -29,8 +29,9 @@ int main(int argc, char** argv)
 
     // Interconnect nodes using an Edge3
     graph.addEdge3(n1,n2,n3);
+    graph.addEdge3(n4,n2,n1);
     graph.addEdge3(n3,n2,n1);
-    graph.addEdge3(n3,n2,n1);
+    graph.addEdge3(n1,n2,n4);
 
     // Check if nodes are added correctly after removal
     graph.deleteNode(n2);
@@ -49,5 +50,3 @@ int main(int argc, char** argv)
 // for point in all feature points:
 //      Add edge2s from point to all other feature points
 //      add edge3s from point to all other feature points with all other feature points
-
-// NEED AN EFFICIENT WAY TO CHECK IF AN EDGE EXISTS AND WHERE TO FIND IT, RIGHT?
