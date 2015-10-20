@@ -31,6 +31,16 @@ int main(int argc, char** argv)
     graph.addEdge3(n1,n2,n3);
     graph.addEdge3(n3,n2,n1);
     graph.addEdge3(n3,n2,n1);
+
+    // Check if nodes are added correctly after removal
+    graph.deleteNode(n2);
+//    int n4 = graph.addNode("node4");
+
+    std::vector<triplet_graph::Node> nodes = graph.getNodes();
+    for (std::vector<triplet_graph::Node>::iterator it = nodes.begin(); it != nodes.end(); it++)
+    {
+        std::cout << it->id << std::endl;
+    }
 }
 
 // Retrieve image from sensor
