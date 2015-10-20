@@ -12,6 +12,7 @@ int main(int argc, char** argv)
     int n1 = graph.addNode("node1");
     int n2 = graph.addNode("node2");
     int n3 = graph.addNode("node3");
+    int n4 = graph.addNode("node4");
 
     // Interconnect nodes using Edge2s
     {
@@ -22,10 +23,14 @@ int main(int argc, char** argv)
         graph.addEdge2(n1,n2,l1);
         graph.addEdge2(n2,n3,l2);
         graph.addEdge2(n3,n1,l3);
+        graph.addEdge2(n4,n1,l1);
+        graph.addEdge2(n4,n2,l3);
     }
 
     // Interconnect nodes using an Edge3
     graph.addEdge3(n1,n2,n3);
+    graph.addEdge3(n3,n2,n1);
+    graph.addEdge3(n3,n2,n1);
 }
 
 // Retrieve image from sensor
