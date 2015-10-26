@@ -47,9 +47,13 @@ int main(int argc, char** argv)
     world.configure(sim_config);
 }
 
-// Retrieve image from sensor
-// Obtain feature points
-// Add nodes for all feature points
+// What should it do?
+// -------------------------
+//
+// Retrieve data from sensor
+// ( Obtain feature points from sensor data)
 // for point in all feature points:
-//      Add edge2s from point to all other feature points
-//      add edge3s from point to all other feature points with all other feature points
+//      if !associate point with existing node
+//          add new node
+//      Add edge2s from node to all nodes added or associated in this cycle
+//      add edge3s from node to all nodes added or associated in this cycle
