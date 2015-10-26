@@ -2,46 +2,49 @@
 #include <iostream>
 
 #include <triplet_graph/Graph.h>
+#include <triplet_graph/graph_operations.h>
+
+#include "graph_test/World.h"
 
 int main(int argc, char** argv)
 {
+    tue::Configuration sim_config, graph_config;
+
+    // Load configuration file
+    // -------------------------
+
+    if ( argc < 3 )
+    {
+        std::cout << "Usage: \n\n    test_triplet_graph SIMULATOR_CONFIG_FILE.yaml TRIPLET_GRAPH_CONFIG_FILE.yaml" << std::endl;
+        return 1;
+    }
+
+    std::string sim_config_filename = argv[1];
+    sim_config.loadFromYAMLFile(sim_config_filename);
+
+    std::string graph_config_filename = argv[2];
+    graph_config.loadFromYAMLFile(graph_config_filename);
+
+    if (sim_config.hasError())
+    {
+        std::cout << std::endl << "Could not load simulator configuration file:" << std::endl << std::endl << sim_config.error() << std::endl;
+        return 1;
+    }
+
+    if (graph_config.hasError())
+    {
+        std::cout << std::endl << "Could not load graph configuration file:" << std::endl << std::endl << graph_config.error() << std::endl;
+        return 1;
+    }
+
     // Instantiate graph
     triplet_graph::Graph graph;
+    graph_map::World world;
 
-    // Add nodes to graph
-    int n1 = graph.addNode("node1");
-    int n2 = graph.addNode("node2");
-    int n3 = graph.addNode("node3");
-    int n4 = graph.addNode("node4");
+    if (!triplet_graph::configure(graph,graph_config))
+        return 1;
 
-    // Interconnect nodes using Edge2s
-    {
-        double l1 = 1.0;
-        double l2 = 2.0;
-        double l3 = 3.0;
-
-        graph.addEdge2(n1,n2,l1);
-        graph.addEdge2(n2,n3,l2);
-        graph.addEdge2(n3,n1,l3);
-        graph.addEdge2(n4,n1,l1);
-        graph.addEdge2(n4,n2,l3);
-    }
-
-    // Interconnect nodes using an Edge3
-    graph.addEdge3(n1,n2,n3);
-    graph.addEdge3(n4,n2,n1);
-    graph.addEdge3(n3,n2,n1);
-    graph.addEdge3(n1,n2,n4);
-
-    // Check if nodes are added correctly after removal
-    graph.deleteNode(n2);
-//    int n4 = graph.addNode("node4");
-
-    std::vector<triplet_graph::Node> nodes = graph.getNodes();
-    for (std::vector<triplet_graph::Node>::iterator it = nodes.begin(); it != nodes.end(); it++)
-    {
-        std::cout << it->id << std::endl;
-    }
+    world.configure(sim_config);
 }
 
 // Retrieve image from sensor
