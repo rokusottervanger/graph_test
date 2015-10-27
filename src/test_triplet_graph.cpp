@@ -14,9 +14,9 @@ int main(int argc, char** argv)
     // Load configuration file
     // -------------------------
 
-    if ( argc < 2 )
+    if ( argc < 5 )
     {
-        std::cout << "Usage: \n\n    test_triplet_graph TRIPLET_GRAPH_CONFIG_FILE.yaml" << std::endl;
+        std::cout << "Usage: \n\n    test_triplet_graph TRIPLET_GRAPH_CONFIG_FILE.yaml source_node1 source_node2 target_node" << std::endl;
         return 1;
     }
 
@@ -47,9 +47,9 @@ int main(int argc, char** argv)
 
 //    world.configure(sim_config);
 
-    int n1 = triplet_graph::findNodeByID(graph,"n1");
-    int n2 = triplet_graph::findNodeByID(graph,"n2");
-    int ntarget = triplet_graph::findNodeByID(graph,"n7");
+    int n1 = triplet_graph::findNodeByID(graph,argv[2]);
+    int n2 = triplet_graph::findNodeByID(graph,argv[3]);
+    int ntarget = triplet_graph::findNodeByID(graph,argv[4]);
 
     triplet_graph::Path path = triplet_graph::findPath(graph,n1,n2,ntarget);
     std::cout << "Found path: " << std::endl;
