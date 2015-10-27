@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 
+#include <triplet_graph/Path.h>
 #include <triplet_graph/Graph.h>
 #include <triplet_graph/graph_operations.h>
 
@@ -13,17 +14,17 @@ int main(int argc, char** argv)
     // Load configuration file
     // -------------------------
 
-    if ( argc < 3 )
+    if ( argc < 2 )
     {
-        std::cout << "Usage: \n\n    test_triplet_graph SIMULATOR_CONFIG_FILE.yaml TRIPLET_GRAPH_CONFIG_FILE.yaml" << std::endl;
+        std::cout << "Usage: \n\n    test_triplet_graph TRIPLET_GRAPH_CONFIG_FILE.yaml" << std::endl;
         return 1;
     }
 
-    std::string sim_config_filename = argv[1];
-    sim_config.loadFromYAMLFile(sim_config_filename);
-
-    std::string graph_config_filename = argv[2];
+    std::string graph_config_filename = argv[1];
     graph_config.loadFromYAMLFile(graph_config_filename);
+
+    //    std::string sim_config_filename = argv[2];
+    //    sim_config.loadFromYAMLFile(sim_config_filename);
 
     if (sim_config.hasError())
     {
@@ -39,12 +40,20 @@ int main(int argc, char** argv)
 
     // Instantiate graph
     triplet_graph::Graph graph;
-    graph_map::World world;
+//    graph_map::World world;
 
     if (!triplet_graph::configure(graph,graph_config))
         return 1;
 
-    world.configure(sim_config);
+//    world.configure(sim_config);
+
+    int n1 = triplet_graph::findNodeByID(graph,"n1");
+    int n2 = triplet_graph::findNodeByID(graph,"n2");
+    int ntarget = triplet_graph::findNodeByID(graph,"n7");
+
+    triplet_graph::Path path = triplet_graph::findPath(graph,n1,n2,ntarget);
+    std::cout << "Found path: " << std::endl;
+    std::cout << path << std::endl;
 }
 
 // What should it do?
