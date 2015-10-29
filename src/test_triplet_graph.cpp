@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     // Parse arguments
     if ( argc < 5 )
     {
-        std::cout << "Usage: \n\n    test_triplet_graph TRIPLET_GRAPH_CONFIG_FILE.yaml source_node1 source_node2 target_node" << std::endl;
+        std::cout << "Usage: \n\n    test_triplet_graph TRIPLET_GRAPH_CONFIG_FILE.yaml target_node source_node1 source_node2 [source_node3...n]" << std::endl;
         return 1;
     }
 
@@ -30,16 +30,24 @@ int main(int argc, char** argv)
     // Instantiate graph
     triplet_graph::Graph graph;
 
+    // Configure graph
     if (!triplet_graph::configure(graph,graph_config))
         return 1;
 
-    int n1 = triplet_graph::findNodeByID(graph,argv[2]);
-    int n2 = triplet_graph::findNodeByID(graph,argv[3]);
-    int ntarget = triplet_graph::findNodeByID(graph,argv[4]);
+    // Get node index of target node
+    int ntarget = triplet_graph::findNodeByID(graph,argv[2]);
+
+    std::vector<int> source_nodes;
+    // Get node indices of source nodes
+    for ( int i = 3; i < argc; i++ )
+    {
+        int node_index = triplet_graph::findNodeByID(graph,argv[i]);
+        source_nodes.push_back(node_index);
+    }
 
     triplet_graph::Path path;
 
-    double cost = triplet_graph::findPath(graph,n1,n2,ntarget,path);
+    double cost = triplet_graph::findPath(graph,source_nodes,ntarget,path);
     std::cout << "Found path: " << std::endl;
     std::cout << path << std::endl;
     std::cout << "With a total cost of " << cost << std::endl;
