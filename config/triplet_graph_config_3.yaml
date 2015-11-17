@@ -1,0 +1,38 @@
+id: "block_M"
+objects:
+  - id: "block_M_0"
+  - id: "block_M_1"
+  - id: "block_M_2"
+  - id: "block_M_3"
+edges:
+  - n1: "block_M_0"
+    n2: "block_M_1"
+    length: 0.8
+  - n1: "block_M_1"
+    n2: "block_M_2"
+    length: 0.2
+  - n1: "block_M_2"
+    n2: "block_M_3"
+    length: 0.8
+  - n1: "block_M_3"
+    n2: "block_M_0"
+    length: 0.2
+  - n1: "block_M_0"
+    n2: "block_M_2"
+    length: 0.8246
+  - n1: "block_M_1"
+    n2: "block_M_3"
+    length: 0.8246
+triplets:
+  - n1: "block_M_0"
+    n2: "block_M_1"
+    n3: "block_M_3"
+  - n1: "block_M_3"
+    n2: "block_M_0"
+    n3: "block_M_2"
+  - n1: "block_M_2"
+    n2: "block_M_3"
+    n3: "block_M_0"
+  - n1: "block_M_1"
+    n2: "block_M_2"
+    n3: "block_M_0"
