@@ -79,9 +79,9 @@ add_executable(test_triplet_graph
 )
 target_link_libraries(test_triplet_graph ${catkin_LIBRARIES})
 
-#add_executable(rviz_publisher
-#    src/rviz_publisher.cpp
-#)
-#target_link_libraries(rviz_publisher ${catkin_LIBRARIES})
+add_executable(test_graph_reader_writer
+    src/test_graph_reader_writer.cpp
+)
+target_link_libraries(test_graph_reader_writer ${catkin_LIBRARIES})
 
 
