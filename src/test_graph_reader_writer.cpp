@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 
     std::string graph_config_filename = argv[1];
     graph_config.loadFromYAMLFile(graph_config_filename);
-    std::string graph_output_filename = graph_config_filename.substr(0,graph_config_filename.size()-5).append("_output.yaml").append("1");
+    std::string graph_output_filename = graph_config_filename.substr(0,graph_config_filename.size()-5).append("_output.yaml");
 
     if (graph_config.hasError())
     {
