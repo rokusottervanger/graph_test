@@ -4,21 +4,21 @@
 #include <geolib/datatypes.h>
 #include <geolib/Box.h>
 #include <tue/config/configuration.h>
-#include <graph_map/Measurement.h>
+#include <triplet_graph/Measurement.h>
 #include <ros/node_handle.h>
+#include <triplet_graph/Visualizer.h>
 
 // -----------------------------------------------------------------------------------------------
 // Ad Hoc simulator
 // -----------------------------------------------------------------------------------------------
 
-namespace graph_map
+namespace graph_simulator
 {
 
-struct Object
+struct Node
 {
     std::string id;
-    geo::Shape shape;
-    geo::Pose3D pose;
+    geo::Vec3d position;
 };
 
 // -----------------------------------------------------------------------------------------------
@@ -28,16 +28,18 @@ class World
 public:
     World(){}
 
-    void addObject(Object object);
+    void addNode(Node node);
 
     void configure(tue::Configuration &config);
 
-    std::vector<graph_map::Measurement> step();
+    void step(triplet_graph::Measurement& measurement);
 
 private:
-    std::vector<Object> objects_;
+    std::vector<Node> nodes_;
 
-//    ros::NodeHandle nh_;
+    geo::Pose3D robot_pose_;
+    std::string sensor_frame_id_;
+    triplet_graph::Visualizer visualizer_;
 };
 
 }

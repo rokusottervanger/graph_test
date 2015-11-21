@@ -1,138 +1,97 @@
 #include "graph_test/World.h"
 
-#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
 
-namespace graph_map
+namespace graph_simulator
 {
 
-//World::World(): nh_("~")
-//{
-//    nh_.advertise<visualization_msgs::MarkerArray>("graph_test/sim/viz",1,true);
-//}
-
-void World::addObject(Object object)
+void World::addNode(Node node)
 {
-    objects_.push_back(object);
+    nodes_.push_back(node);
 }
 
 void World::configure(tue::Configuration &config)
 {
-    if (config.readArray("objects"))
+    if (config.readArray("nodes"))
     {
         while (config.nextArrayItem())
         {
-            Object obj;
-
             // Check for the 'enabled' field. If it exists and the value is 0, omit this object. This allows
             // the user to easily enable and disable certain objects with one single flag.
-            int enabled;
+            int enabled = 1;
             if (config.value("enabled", enabled, tue::OPTIONAL) && !enabled)
                 continue;
 
-            std::string id = "";
-            if (!config.value("id", id))
-                continue;
+            Node node;
 
+            // - - - - - - - - - - - - - - - - - - - - - - - -
+            // Load id
+
+            node.id = "";
+            if (!config.value("id", node.id))
+                continue;
 
             // - - - - - - - - - - - - - - - - - - - - - - - -
             // Load pose
 
-            geo::Pose3D pose = geo::Pose3D::identity();
-            if (config.readGroup("pose", tue::REQUIRED))
+            node.position = geo::Vec3d(0,0,0);
+            if (config.readGroup("position", tue::REQUIRED))
             {
-                config.value("x", pose.t.x);
-                config.value("y", pose.t.y);
-                config.value("z", pose.t.z);
-
-                double roll = 0, pitch = 0, yaw = 0;
-                config.value("roll", roll, tue::OPTIONAL);
-                config.value("pitch", pitch, tue::OPTIONAL);
-                config.value("yaw", yaw, tue::OPTIONAL);
-                pose.R.setRPY(roll, pitch, yaw);
-
+                config.value("x", node.position.x);
+                config.value("y", node.position.y);
+                config.value("z", node.position.z,tue::OPTIONAL);
                 config.endGroup();
             }
             else
                 continue;
-
-            // - - - - - - - - - - - - - - - - - - - - - - - -
-            // Add shape
-
-            std::string type;
-            if (config.value("type", type))
-            {
-                if (type == "amigo")
-                {
-                    std::cout << "TODO: Load amigo into simulator object" << std::endl;
-                    // Load amigo into object
-                }
-                else
-                {
-                    std::cout << "Object '" << id << "'' has unknown object type '" << type << "'" << std::endl;
-                }
-            }
-            else if (config.readArray("shape",tue::OPTIONAL))
-            {
-                while (config.nextArrayItem())
-                {
-                    if (config.readGroup("box",tue::OPTIONAL))
-                    {
-                        geo::Vector3 min, max;
-
-                        if (config.readGroup("min"))
-                        {
-                            config.value("x", min.x);
-                            config.value("y", min.y);
-                            config.value("z", min.z);
-                            config.endGroup();
-                        }
-
-                        if (config.readGroup("max"))
-                        {
-                            config.value("x", max.x);
-                            config.value("y", max.y);
-                            config.value("z", max.z);
-                            config.endGroup();
-                        }
-
-                        geo::Box box(min,max);
-
-                        obj.shape = box;
-                        std::cout << "Set box as shape of entity '" << id << "'" << std::endl;
-
-                        config.endGroup();
-                    }
-                    else
-                    {
-                        std::cout << "Shape definition of object with id '" << id << "' unknown. Not adding a shape to the entity." << std::endl;
-                    }
-                }
-
-                // todo: add features based on geometry described in config
-
-                // - - - - - - - - - - - - - - - - - - - - - - - -
-                // Add object
-
-                obj.id = id;
-                obj.pose = pose;
-                addObject(obj);
-
-                std::cout << "[SIM] Added object: id = '" << id << "', pose = " << pose << std::endl;
-                config.endArray();
-            }
         }
     }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - -
+    // Load robot pose
+
+    if (config.readArray("robot", tue::REQUIRED))
+    {
+        robot_pose_ = geo::Pose3D(0,0,0);
+        if (config.readGroup("initial_pose", tue::REQUIRED))
+        {
+            config.value("x", robot_pose_.t.x);
+            config.value("y", robot_pose_.t.y);
+            config.value("z", robot_pose_.t.z,tue::OPTIONAL);
+
+            double r = 0, p = 0, y = 0;
+            config.value("r", r, tue::OPTIONAL);
+            config.value("p", p, tue::OPTIONAL);
+            config.value("y", y, tue::OPTIONAL);
+            robot_pose_.setRPY(r,p,y);
+            config.endGroup();
+        }
+        config.value("sensor_frame_id", sensor_frame_id_, tue::REQUIRED);
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - -
+    // Configure visualizer
+    visualizer_.configure(config);
 }
 
-Measurements World::step()
+void World::step(triplet_graph::Measurement &measurement)
 {
-    std::cout << "[SIM] Stepping simulator" << std::endl;
+//    std::cout << "[SIM] Stepping simulator" << std::endl;
 
+    for ( std::vector<Node>::iterator it = nodes_.begin(); it != nodes_.end(); ++it )
+    {
+        geo::Vec3d pt = robot_pose_.inverse() * it->position;
+        measurement.points.push_back(pt);
+    }
 
+    measurement.time_stamp = ros::Time::now();
+    measurement.frame_id = sensor_frame_id_;
 
-    Measurements measurements;
+    if ( visualizer_.isConfigured() )
+    {
+        visualizer_.publish(measurement);
+    }
 
-    return measurements;
 }
 
 }

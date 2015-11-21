@@ -28,7 +28,7 @@ using namespace graph_map;
 int main(int argc, char** argv)
 {
     tue::Configuration sim_config, graph_config;
-    graph_map::World world = graph_map::World();
+//    graph_map::World world = graph_map::World();
     graph_map::Graph graph = graph_map::Graph();
 
 
@@ -60,12 +60,12 @@ int main(int argc, char** argv)
     }
 
 
-    // Configure sim and graph
-    // -------------------------
+//    // Configure sim and graph
+//    // -------------------------
 
-    world.configure(sim_config);
-    if (!graph.configure(graph_config))
-        return 1;
+//    world.configure(sim_config);
+//    if (!graph.configure(graph_config))
+//        return 1;
 
 
     // Test findNodeByID
