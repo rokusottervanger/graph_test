@@ -5,7 +5,7 @@
 namespace graph_simulator
 {
 
-void World::addNode(Node node)
+void World::addNode(Node& node)
 {
     nodes_.push_back(node);
 }
@@ -73,6 +73,7 @@ void World::configure(tue::Configuration &config)
     // Configure visualizer
     visualizer_.configure(config);
 }
+
 
 void World::step(triplet_graph::Measurement &measurement)
 {

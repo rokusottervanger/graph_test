@@ -28,11 +28,13 @@ class World
 public:
     World(){}
 
-    void addNode(Node node);
+    void addNode(Node&);
 
-    void configure(tue::Configuration &config);
+    void configure(tue::Configuration&);
 
-    void step(triplet_graph::Measurement& measurement);
+    void setInitialPose(geo::Pose3D&) { robot_pose_ = pose; }
+
+    void step(triplet_graph::Measurement&);
 
 private:
     std::vector<Node> nodes_;

@@ -1,11 +1,12 @@
 #include <iostream>
-#include <graph_map/Graph.h>
-#include <graph_map/Measurement.h>
+#include <triplet_graph/Graph.h>
+#include <triplet_graph/graph_operations.h>
+#include <triplet_graph/Measurement.h>
 #include <tue/config/configuration.h>
 #include <tue/config/loaders/yaml.h>
 #include "graph_test/World.h"
 
-using namespace graph_map;
+using namespace triplet_graph;
 
 /*
  * TODOs:
@@ -21,18 +22,17 @@ using namespace graph_map;
     *   Add new relations
 -   Visualization of sim world (ground truth)
 -   Visualization of best estimate (graph)
-
 */
 
 
 int main(int argc, char** argv)
 {
     tue::Configuration sim_config, graph_config;
-//    graph_map::World world = graph_map::World();
-    graph_map::Graph graph = graph_map::Graph();
+    graph_simulator::World world;
+    Graph graph;
 
 
-    // Load configuration file
+    // Load configuration files
     // -------------------------
 
     if ( argc < 3 )
@@ -41,59 +41,74 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    std::cout << "Loading simulator config file... ";
+
     std::string sim_config_filename = argv[1];
     sim_config.loadFromYAMLFile(sim_config_filename);
+
+    std::cout << "Done!" << std::endl;
+
+    std::cout << "Loading graph config file... ";
+
+    std::cout << "Done!" << std::endl;
 
     std::string graph_config_filename = argv[2];
     graph_config.loadFromYAMLFile(graph_config_filename);
 
     if (sim_config.hasError())
     {
-        std::cout << std::endl << "Could not load simulator configuration file:" << std::endl << std::endl << sim_config.error() << std::endl;
+        std::cout << std::endl << "Could not load simulator configuration file:" << std::endl << sim_config.error() << std::endl;
         return 1;
     }
 
     if (graph_config.hasError())
     {
-        std::cout << std::endl << "Could not load graph configuration file:" << std::endl << std::endl << graph_config.error() << std::endl;
+        std::cout << std::endl << "Could not load graph configuration file:" << std::endl << graph_config.error() << std::endl;
         return 1;
     }
 
+    std::cout << std::endl;
 
-//    // Configure sim and graph
-//    // -------------------------
 
-//    world.configure(sim_config);
-//    if (!graph.configure(graph_config))
-//        return 1;
+    // Configure sim and graph
+    // -------------------------
+
+    std::cout << "Configuring simulator... ";
+
+    world.configure(sim_config);
+
+    std::cout << "Done!" << std::endl;
+    std::cout << "Configuring graph... ";
+
+    if (!triplet_graph::configure(graph,graph_config))
+        return 1;
+
+    std::cout << "Done!" << std::endl << std::endl;
 
 
     // Test findNodeByID
     // -------------------------
 
-    int n1 = graph.findNodeByID("box1");
-    int n2 = graph.findNodeByID("box2");
+    std::cout << "Testing findNodeByID..." << std::endl;
+
+    int n1 = findNodeByID(graph,"box1");
+    int n2 = findNodeByID(graph,"box2");
+    std::cout << "Looking for nodes 'box1' and 'box2'" << std::endl;
     std::cout << "Found nodes by ID:" << std::endl;
-    std::cout << graph.getNode(n1).id << std::endl << graph.getNode(n2).id << std::endl;
+    std::cout << (graph.begin()+n1)->id << std::endl << (graph.begin()+n2)->id << std::endl;
 
 
-    // Add robot to graph
+    // Generate initial pose (associated measurement)
     // -------------------------
 
-    int robot = graph.addNode("robot");
-    geo::Pose3D initial_guess = geo::Pose3D(2.0,0,0,0,0,0);
-    graph.addEdge(robot,n1,initial_guess);
+    geo::Pose3D initial_pose(0,0,0);
+    Measurement measurement;
+
+    world.setInitialPose(initial_pose);
+    world.step(measurement);
 
 
-    // Test Dijkstra
-    // -------------------------
 
-//    graph_map::Path path = graph.Dijkstra(n1,n2);
-//    std::cout << "Ran Dijkstra with result:" << std::endl;
-
-//    std::cout << path.toString() << std::endl;
-
-//    std::cout << "Starting main loop" << std::endl;
 
 
     // Main Loop
