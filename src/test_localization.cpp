@@ -101,11 +101,19 @@ int main(int argc, char** argv)
     // Generate initial pose (associated measurement)
     // -------------------------
 
+    std::cout << "Testing associate function..." << std::endl;
+
     geo::Pose3D initial_pose(0,0,0);
     Measurement measurement;
 
     world.setInitialPose(initial_pose);
     world.step(measurement);
+
+    AssociatedMeasurement associations;
+
+    for ( std::vector<geo::Vec3d>::iterator it = measurement.points.begin(); it !=  )
+
+    associate(graph, measurement, associations, initial_pose, -1);
 
 
 
