@@ -10,8 +10,8 @@ void World::addNode(Node& node)
     nodes_.push_back(node);
 }
 
-void World::configure(tue::Configuration &config)
-{
+bool World::configure(tue::Configuration &config)
+{ 
     if (config.readArray("nodes"))
     {
         while (config.nextArrayItem())
@@ -44,13 +44,18 @@ void World::configure(tue::Configuration &config)
             }
             else
                 continue;
+
+            nodes_.push_back(node);
         }
+        std::cout << "[WORLD] Configure: Sim world now contains " << nodes_.size() << " nodes." << std::endl;
+        config.endArray();
     }
+
 
     // - - - - - - - - - - - - - - - - - - - - - - - -
     // Load robot pose
 
-    if (config.readArray("robot", tue::REQUIRED))
+    if (config.readGroup("robot", tue::REQUIRED))
     {
         robot_pose_ = geo::Pose3D(0,0,0);
         if (config.readGroup("initial_pose", tue::REQUIRED))
@@ -60,28 +65,49 @@ void World::configure(tue::Configuration &config)
             config.value("z", robot_pose_.t.z,tue::OPTIONAL);
 
             double r = 0, p = 0, y = 0;
-            config.value("r", r, tue::OPTIONAL);
-            config.value("p", p, tue::OPTIONAL);
-            config.value("y", y, tue::OPTIONAL);
+            config.value("roll", r, tue::OPTIONAL);
+            config.value("pitch", p, tue::OPTIONAL);
+            config.value("yaw", y, tue::OPTIONAL);
             robot_pose_.setRPY(r,p,y);
             config.endGroup();
+            std::cout << "[WORLD] Configure: Added robot at pose (x,y,theta) = ("
+                      << robot_pose_.t.x << ","
+                      << robot_pose_.t.y << ","
+                      << y << ")" << std::endl;
+            std::cout << robot_pose_ << std::endl;
         }
+        else
+            std::cout << "[WORLD] Configure: Found robot, but not its initial pose" << std::endl;
         config.value("sensor_frame_id", sensor_frame_id_, tue::REQUIRED);
+        config.endGroup();
     }
+    else
+    {
+        std::cout << "[WORLD] Configure: No initial pose of robot found, returning false!" << std::endl;
+        return false;
+    }
+
 
     // - - - - - - - - - - - - - - - - - - - - - - - -
     // Configure visualizer
-    visualizer_.configure(config);
+
+    if ( config.readGroup("vis") )
+        visualizer_.configure(config);
+
+    return true;
 }
 
 
 void World::step(triplet_graph::Measurement &measurement)
 {
-//    std::cout << "[SIM] Stepping simulator" << std::endl;
+    std::cout << "[WORLD] Step: Stepping simulator containing " << nodes_.size() << " nodes." << std::endl;
 
     for ( std::vector<Node>::iterator it = nodes_.begin(); it != nodes_.end(); ++it )
     {
+        std::cout << "[WORLD] Step: Original point: " << it->position << std::endl;
+        std::cout << "[WORLD] Step: Robot pose: " << robot_pose_ << std::endl;
         geo::Vec3d pt = robot_pose_.inverse() * it->position;
+        std::cout << "[WORLD] Step: Converted point: " << pt << std::endl;
         measurement.points.push_back(pt);
     }
 

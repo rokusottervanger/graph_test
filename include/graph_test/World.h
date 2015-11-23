@@ -30,9 +30,9 @@ public:
 
     void addNode(Node&);
 
-    void configure(tue::Configuration&);
+    bool configure(tue::Configuration&);
 
-    void setInitialPose(geo::Pose3D&) { robot_pose_ = pose; }
+    void setInitialPose(geo::Pose3D& pose) { robot_pose_ = pose; }
 
     void step(triplet_graph::Measurement&);
 

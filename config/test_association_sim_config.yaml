@@ -1,0 +1,17 @@
+nodes:
+  - id: "point1"
+    position: {x: 0, y: 0}
+  - id: "point2"
+    position: {x: 1, y: 0}
+  - id: "point3"
+    position: {x: 0.5, y: 0.866}
+robot:
+    initial_pose: {x: 0.5, y: -0.866, yaw: 1.57}
+    sensor_frame_id: "/amigo/base_laser"
+vis:
+    points:
+        name: "sim_points"
+        color: {r: 0, g: 0, b: 1}
+    # lines:
+    #     name: "sim_lines"
+    #     color: {r: 0, g: 0, b: 1}

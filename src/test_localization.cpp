@@ -27,19 +27,33 @@ using namespace triplet_graph;
 
 int main(int argc, char** argv)
 {
-    tue::Configuration sim_config, graph_config;
-    graph_simulator::World world;
-    Graph graph;
-
-
-    // Load configuration files
-    // -------------------------
-
     if ( argc < 3 )
     {
         std::cout << "Usage: \n\n    test_localization SIMULATOR_CONFIG_FILE.yaml GRAPH_CONFIG_FILE.yaml" << std::endl;
         return 1;
     }
+
+    ros::init(argc, argv, "test_localization");
+
+    std::cout << "Starting..." << std::endl;
+
+    tue::Configuration sim_config, graph_config;
+
+    std::cout << "Instantiating sim world" << std::endl;
+
+    graph_simulator::World world;
+
+    std::cout << "Instantiating graph" << std::endl;
+
+    triplet_graph::Graph graph;
+
+    std::cout << "Done!" << std::endl;
+
+    std::cout << "Loading configurations" << std::endl;
+
+
+    // Load configuration files
+    // -------------------------
 
     std::cout << "Loading simulator config file... ";
 
@@ -73,12 +87,13 @@ int main(int argc, char** argv)
     // Configure sim and graph
     // -------------------------
 
-    std::cout << "Configuring simulator... ";
+    std::cout << "Configuring simulator... " << std::endl;
 
-    world.configure(sim_config);
+    if ( !world.configure(sim_config) )
+        return 1;
+    std::cout << "Done!" << std::endl << std::endl;
 
-    std::cout << "Done!" << std::endl;
-    std::cout << "Configuring graph... ";
+    std::cout << "Configuring graph... " << std::endl;
 
     if (!triplet_graph::configure(graph,graph_config))
         return 1;
@@ -91,46 +106,62 @@ int main(int argc, char** argv)
 
     std::cout << "Testing findNodeByID..." << std::endl;
 
-    int n1 = findNodeByID(graph,"box1");
-    int n2 = findNodeByID(graph,"box2");
-    std::cout << "Looking for nodes 'box1' and 'box2'" << std::endl;
-    std::cout << "Found nodes by ID:" << std::endl;
-    std::cout << (graph.begin()+n1)->id << std::endl << (graph.begin()+n2)->id << std::endl;
+    int n1 = findNodeByID(graph,"n1");
+    int n2 = findNodeByID(graph,"n2");
+    std::cout << "Looking for nodes 'n1' and 'n2'" << std::endl;
+    if ( n1 > -1 && n2 > -1 )
+    {
+        std::cout << "Found nodes by ID:" << std::endl;
+        std::cout << (graph.begin()+n1)->id << std::endl << (graph.begin()+n2)->id << std::endl << std::endl;
+    }
+    else
+    {
+        std::cout << "Could not find those nodes. These nodes are available:" << std::endl;
+        for ( Graph::const_iterator it = graph.begin(); it != graph.end(); ++it )
+            std::cout << it->id << std::endl;
+        return 1;
+    }
 
-
-    // Generate initial pose (associated measurement)
+    // Test simulator
     // -------------------------
 
-    std::cout << "Testing associate function..." << std::endl;
+    std::cout << "Testing simulator..." << std::endl;
 
     geo::Pose3D initial_pose(0,0,0);
     Measurement measurement;
 
-    world.setInitialPose(initial_pose);
+//    world.setInitialPose(initial_pose);
     world.step(measurement);
+
+    std::cout << "Simulator added " << measurement.points.size() << " points to the measurement: " << std::endl;
+    for ( std::vector<geo::Vec3d>::iterator it = measurement.points.begin(); it != measurement.points.end(); ++it )
+    {
+        std::cout << *it << std::endl;
+    }
+    return 0;
 
     AssociatedMeasurement associations;
 
-    for ( std::vector<geo::Vec3d>::iterator it = measurement.points.begin(); it !=  )
+    // Add first two nodes to associated measurement
+    associations.measurement = measurement;
+    associations.measurement.points.pop_back();
 
+    associations.nodes.push_back(0);
+    associations.nodes.push_back(1);
+
+    std::cout << "Testing associate function with these prior nodes and one additional node to be associated..." << std::endl;
+
+    // Try to associate all nodes in the graph
     associate(graph, measurement, associations, initial_pose, -1);
 
+    // Show which nodes were succesfully associated:
+    std::cout << "Managed to associate " << associations.nodes.size() << " nodes:" << std::endl;
+    for ( std::vector<int>::iterator it = associations.nodes.begin(); it != associations.nodes.end(); ++it )
+    {
+        std::cout << "\tNode " << *it << std::endl;
+    }
 
-
-
-
-    // Main Loop
-    // -------------------------
-
-//    while (true)
-//    {
-//        graph_map::Measurements measurements = world.step();
-
-//        graph.update(measurements);
-
-//        usleep(0.2e6); // Not 5 Hz!!! todo: make this really 0.2s instead of 0.2s+calculation time...
-//        // todo: only localize when you have a task, right?
-//    }
+    std::cout << std::endl;
 
     return 0;
 }
