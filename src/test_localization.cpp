@@ -127,10 +127,9 @@ int main(int argc, char** argv)
 
     std::cout << "Testing simulator..." << std::endl;
 
-    geo::Pose3D initial_pose(0,0,0);
+    // Generate simulated measurement
     Measurement measurement;
 
-//    world.setInitialPose(initial_pose);
     world.step(measurement);
 
     std::cout << "Simulator added " << measurement.points.size() << " points to the measurement: " << std::endl;
@@ -138,27 +137,30 @@ int main(int argc, char** argv)
     {
         std::cout << *it << std::endl;
     }
-    return 0;
+
+    // Manually associate measurement (Add first two nodes to associated measurement)
+    std::cout << "Generating an initial associated measurement of the first two points of the measurement" << std::endl;
 
     AssociatedMeasurement associations;
 
-    // Add first two nodes to associated measurement
     associations.measurement = measurement;
     associations.measurement.points.pop_back();
 
     associations.nodes.push_back(0);
     associations.nodes.push_back(1);
 
-    std::cout << "Testing associate function with these prior nodes and one additional node to be associated..." << std::endl;
+    std::cout << "Testing associate function with these prior nodes and the third node to be associated..." << std::endl;
 
     // Try to associate all nodes in the graph
+    geo::Pose3D initial_pose(0,0,0);
     associate(graph, measurement, associations, initial_pose, -1);
 
     // Show which nodes were succesfully associated:
     std::cout << "Managed to associate " << associations.nodes.size() << " nodes:" << std::endl;
     for ( std::vector<int>::iterator it = associations.nodes.begin(); it != associations.nodes.end(); ++it )
     {
-        std::cout << "\tNode " << *it << std::endl;
+        int i = it - associations.nodes.begin();
+        std::cout << "\tNode " << *it << " at " << associations.measurement.points[i] << " in " << associations.measurement.frame_id << std::endl;
     }
 
     std::cout << std::endl;
