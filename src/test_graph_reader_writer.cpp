@@ -21,6 +21,8 @@ int main(int argc, char** argv)
     std::string graph_config_filename = argv[1];
     graph_config.loadFromYAMLFile(graph_config_filename);
     std::string graph_output_filename = graph_config_filename.substr(0,graph_config_filename.size()-5).append("_output.yaml");
+    std::cout << "Reading " << graph_config_filename << std::endl;
+    std::cout << "and writing to " << graph_output_filename << std::endl;
 
     if (graph_config.hasError())
     {
@@ -31,9 +33,16 @@ int main(int argc, char** argv)
     // Instantiate graph
     triplet_graph::Graph graph;
 
+    std::cout << "Configuring graph..." << std::endl;
     // Configure graph
     if (!triplet_graph::configure(graph,graph_config))
+    {
+        std::cout << "Something went wrong configuring the graph" << std::endl;
         return 1;
+    }
+    std::cout << "Graph succesfully configured. Saving graph..." << std::endl;
 
     triplet_graph::save(graph,graph_output_filename);
+
+    std::cout << "Graph saved. Check the output!" << std::endl;
 }
