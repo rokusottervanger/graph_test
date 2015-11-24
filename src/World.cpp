@@ -74,7 +74,6 @@ bool World::configure(tue::Configuration &config)
                       << robot_pose_.t.x << ","
                       << robot_pose_.t.y << ","
                       << y << ")" << std::endl;
-            std::cout << robot_pose_ << std::endl;
         }
         else
             std::cout << "[WORLD] Configure: Found robot, but not its initial pose" << std::endl;
@@ -100,14 +99,9 @@ bool World::configure(tue::Configuration &config)
 
 void World::step(triplet_graph::Measurement &measurement)
 {
-    std::cout << "[WORLD] Step: Stepping simulator containing " << nodes_.size() << " nodes." << std::endl;
-
     for ( std::vector<Node>::iterator it = nodes_.begin(); it != nodes_.end(); ++it )
     {
-        std::cout << "[WORLD] Step: Original point: " << it->position << std::endl;
-        std::cout << "[WORLD] Step: Robot pose: " << robot_pose_ << std::endl;
         geo::Vec3d pt = robot_pose_.inverse() * it->position;
-        std::cout << "[WORLD] Step: Converted point: " << pt << std::endl;
         measurement.points.push_back(pt);
     }
 
