@@ -5,6 +5,7 @@
 #include <tue/config/configuration.h>
 #include <tue/config/loaders/yaml.h>
 #include "graph_test/World.h"
+#include <triplet_graph/Path.h>
 
 using namespace triplet_graph;
 
@@ -46,8 +47,6 @@ int main(int argc, char** argv)
     std::cout << "Instantiating graph" << std::endl;
 
     triplet_graph::Graph graph;
-
-    std::cout << "Done!" << std::endl;
 
     std::cout << "Loading configurations" << std::endl;
 
@@ -104,7 +103,9 @@ int main(int argc, char** argv)
     // Test findNodeByID
     // -------------------------
 
+    std::cout << "-------------------------------------" << std::endl;
     std::cout << "Testing findNodeByID..." << std::endl;
+    std::cout << "-------------------------------------" << std::endl;
 
     int n1 = findNodeByID(graph,"n1");
     int n2 = findNodeByID(graph,"n2");
@@ -122,10 +123,13 @@ int main(int argc, char** argv)
         return 1;
     }
 
+
     // Test simulator
     // -------------------------
 
+    std::cout << "-------------------------------------" << std::endl;
     std::cout << "Testing simulator..." << std::endl;
+    std::cout << "-------------------------------------" << std::endl;
 
     // Generate simulated measurement
     Measurement measurement;
@@ -137,9 +141,16 @@ int main(int argc, char** argv)
     {
         std::cout << *it << std::endl;
     }
+    std::cout << std::endl;
+
+
+    // Test association
+    // -------------------------
 
     // Manually associate measurement (Add first two nodes to associated measurement)
+    std::cout << "-------------------------------------" << std::endl;
     std::cout << "Generating an initial associated measurement of the first two points of the measurement" << std::endl;
+    std::cout << "-------------------------------------" << std::endl;
 
     AssociatedMeasurement associations;
 
@@ -153,17 +164,71 @@ int main(int argc, char** argv)
 
     // Try to associate all nodes in the graph
     geo::Pose3D initial_pose(0,0,0);
-    associate(graph, measurement, associations, initial_pose, -1);
+    Path path;
+
+    associate(graph, measurement, associations, initial_pose, -1, path);
 
     // Show which nodes were succesfully associated:
     std::cout << "Managed to associate " << associations.nodes.size() << " nodes:" << std::endl;
     for ( std::vector<int>::iterator it = associations.nodes.begin(); it != associations.nodes.end(); ++it )
     {
         int i = it - associations.nodes.begin();
-        std::cout << "\tNode " << *it << " at " << associations.measurement.points[i] << " in " << associations.measurement.frame_id << std::endl;
+        std::cout << "Node " << *it << " at " << associations.measurement.points[i] << " in " << associations.measurement.frame_id << std::endl;
     }
-
     std::cout << std::endl;
+
+
+    // Test graph update
+    // -------------------------
+
+    std::cout << "-------------------------------------" << std::endl;
+    std::cout << "Testing update function..." << std::endl;
+    std::cout << "-------------------------------------" << std::endl;
+
+    // Calculate positions again to show them on the screen:
+    std::vector<geo::Vec3d> positions(graph.size());
+    for ( int i = 0; i < associations.nodes.size(); ++i )
+        positions[associations.nodes[i]] = initial_pose.inverse() * associations.measurement.points[i];
+
+    calculatePositions(graph, positions, path);
+
+    std::cout << "Current graph node positions:" << std::endl;
+    for ( std::vector<geo::Vec3d>::iterator it = positions.begin(); it != positions.end(); ++it )
+        std::cout << *it << std::endl;
+
+    std::cout << "Running graph update" << std::endl;
+
+    updateGraph(graph,associations);
+
+    positions.clear();
+    positions.resize(graph.size());
+    for ( int i = 0; i < associations.nodes.size(); ++i )
+        positions[associations.nodes[i]] = initial_pose.inverse() * associations.measurement.points[i];
+
+    calculatePositions(graph, positions, path);
+
+    std::cout << "New node positions are:" << std::endl;
+    for ( std::vector<geo::Vec3d>::iterator it = positions.begin(); it != positions.end(); ++it )
+        std::cout << *it << std::endl;
+
+    std::cout << "Done!" << std::endl << std::endl;
+
+
+    // Test graph extension
+    // -------------------------
+
+    std::cout << "-------------------------------------" << std::endl;
+    std::cout << "Testing extend function..." << std::endl;
+    std::cout << "-------------------------------------" << std::endl;
+
+    extendGraph(graph, measurement, associations);
+
+    std::cout << "Graph now contains the following nodes:" << std::endl;
+
+    for ( Graph::const_iterator it = graph.begin(); it != graph.end(); ++it )
+        std::cout << it->id << std::endl;
+
+    std::cout << "Done!" << std::endl;
 
     return 0;
 }

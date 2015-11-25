@@ -4,7 +4,9 @@ nodes:
   - id: "point2"
     position: {x: 1, y: 0}
   - id: "point3"
-    position: {x: 0.5, y: 0.866}
+    position: {x: 0.52, y: 0.866}
+  - id: "point4"
+    position: {x: 1, y: 1}
 robot:
     initial_pose: {x: 0.5, y: -0.866, yaw: 1.57}
     sensor_frame_id: "/amigo/base_laser"
