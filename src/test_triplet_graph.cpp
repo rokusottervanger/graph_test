@@ -4,6 +4,7 @@
 #include <triplet_graph/Path.h>
 #include <triplet_graph/Graph.h>
 #include <triplet_graph/graph_operations.h>
+#include <triplet_graph/PathFinder.h>
 
 #include "graph_test/World.h"
 
@@ -47,7 +48,9 @@ int main(int argc, char** argv)
 
     triplet_graph::Path path;
 
-    double cost = triplet_graph::findPath(graph,source_nodes,ntarget,path);
+    triplet_graph::PathFinder pathFinder(graph, source_nodes);
+    double cost = pathFinder.findPath(ntarget,path);
+//    double cost = triplet_graph::findPath(graph,source_nodes,ntarget,path);
     std::cout << "Found path: " << std::endl;
     std::cout << path << std::endl;
     std::cout << "With a total cost of " << cost << std::endl;
