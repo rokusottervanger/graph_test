@@ -153,6 +153,7 @@ int main(int argc, char** argv)
     std::cout << "-------------------------------------" << std::endl;
 
     AssociatedMeasurement associations;
+    Measurement unassociated_points;
 
     associations.measurement = measurement;
     associations.measurement.points.pop_back();
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
     geo::Pose3D initial_pose(0,0,0);
     Path path;
 
-    associate(graph, measurement, associations, initial_pose, -1, path);
+    associate(graph, measurement, associations, unassociated_points, initial_pose, -1, path);
 
     // Show which nodes were succesfully associated:
     std::cout << "Managed to associate " << associations.nodes.size() << " nodes:" << std::endl;
@@ -221,7 +222,7 @@ int main(int argc, char** argv)
     std::cout << "Testing extend function..." << std::endl;
     std::cout << "-------------------------------------" << std::endl;
 
-    extendGraph(graph, measurement, associations);
+    extendGraph(graph, unassociated_points, associations);
 
     std::cout << "Graph now contains the following nodes:" << std::endl;
 
