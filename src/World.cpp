@@ -1,4 +1,8 @@
 #include "graph_test/World.h"
+#include <triplet_graph/Graph.h>
+#include <triplet_graph/graph_operations.h>
+#include <triplet_graph/PathFinder.h>
+#include <triplet_graph/Path.h>
 
 #include <visualization_msgs/Marker.h>
 
@@ -10,9 +14,83 @@ void World::addNode(Node& node)
     nodes_.push_back(node);
 }
 
+// TODO: throw exceptions instead of returning -1's
+
 bool World::configure(tue::Configuration &config)
 { 
-    if (config.readArray("nodes"))
+    // - - - - - - - - - - - - - - - - - - - - - - - -
+    // Load world from a separate file
+
+    std::string filename;
+    if ( config.value("filename",filename))
+    {
+        tue::Configuration world_config;
+        world_config.loadFromYAMLFile(filename);
+
+        // Check if this file defines a graph description of the world
+        if ( world_config.readGroup("triplets") )
+        {
+            world_config.endGroup();
+
+            // Load graph config in a graph
+            triplet_graph::Graph graph;
+            triplet_graph::configure(graph,world_config);
+            std::vector<geo::Vec3d> positions(graph.size());
+
+            std::vector<int> source_nodes;
+            if ( config.readArray("initial_nodes") )
+            {
+                while ( config.nextArrayItem() )
+                {
+                    std::string id;
+                    double x,y;
+                    config.value("id",id);
+                    config.readGroup("position");
+                    config.value("x",x);
+                    config.value("y",y);
+                    config.endGroup();
+
+                    int n = triplet_graph::findNodeByID(graph,id);
+                    if ( n > -1 )
+                    {
+                        positions[n] = geo::Vec3d(x,y,0);
+                        source_nodes.push_back(n);
+                    }
+                    else
+                        std::cout << "[WORLD] configure: WARNING: Could not find initial node with id '" << id << "' in graph" << std::endl;
+
+                }
+                config.endArray();
+                if ( source_nodes.size() < 2 )
+                {
+                    std::cout << "[WORLD] configure: ERROR: Not enough initial nodes given." << std::endl;
+                    return false;
+                }
+            }
+
+            // Determine parent-child relations between all connected nodes in graph
+            triplet_graph::PathFinder pathFinder(graph,source_nodes);
+            triplet_graph::Path path;
+            pathFinder.findPath(path);
+            if ( path.size() < graph.size())
+            {
+                std::cout << "[WORLD] configure: WARNING: Not all graph nodes are reachable from the given initial nodes" << std::endl;
+            }
+
+            // Calculate positions of all connected nodes in graph
+            triplet_graph::calculatePositions(graph,positions,path);
+
+            for ( triplet_graph::Path::iterator it = path.begin(); it != path.end(); ++it )
+            {
+                Node node;
+                node.id = (graph.begin() + *it)->id;
+                node.position = positions[*it];
+                nodes_.push_back(node);
+            }
+        }
+        // TODO: Make it possible to read cartesian description from external file and make sure this does not mean duplicate code with reading from same config
+    }
+    else if (config.readArray("nodes"))
     {
         while (config.nextArrayItem())
         {
@@ -47,9 +125,10 @@ bool World::configure(tue::Configuration &config)
 
             nodes_.push_back(node);
         }
-        std::cout << "[WORLD] Configure: Sim world now contains " << nodes_.size() << " nodes." << std::endl;
         config.endArray();
     }
+
+    std::cout << "[WORLD] Configure: DEBUG Sim world now contains " << nodes_.size() << " nodes." << std::endl;
 
 
     // - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,7 +155,7 @@ bool World::configure(tue::Configuration &config)
                       << y << ")" << std::endl;
         }
         else
-            std::cout << "[WORLD] Configure: Found robot, but not its initial pose" << std::endl;
+            std::cout << "[WORLD] Configure: WARNING: Found robot, but not its initial pose" << std::endl;
         config.value("sensor_frame_id", sensor_frame_id_, tue::REQUIRED);
         config.endGroup();
     }
@@ -96,6 +175,7 @@ bool World::configure(tue::Configuration &config)
     return true;
 }
 
+// TODO: make it possible to move the robot using arrow keys
 
 void World::step(triplet_graph::Measurement &measurement)
 {
