@@ -44,8 +44,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
  INCLUDE_DIRS include
-#  LIBRARIES bla
-#  CATKIN_DEPENDS other_catkin_pkg
+ LIBRARIES graph_test
+ CATKIN_DEPENDS triplet_graph tue_config geolib2
 #  DEPENDS system_lib
 )
 
@@ -60,22 +60,19 @@ include_directories(
 
 file(GLOB_RECURSE HEADER_FILES include/*.h)
 
-# add_library(library_name
-#     src/lib_source_file1.cpp
-#     ...
-# )
-# target_link_libraries(library_name ${catkin_LIBRARIES})
+add_library( graph_simulator
+    src/World.cpp
+)
+target_link_libraries(graph_simulator ${catkin_LIBRARIES})
 
 add_executable(test_localization
     src/test_localization.cpp
-    src/World.cpp
     ${HEADER_FILES}
 )
-target_link_libraries(test_localization ${catkin_LIBRARIES})
+target_link_libraries(test_localization graph_simulator ${catkin_LIBRARIES})
 
 add_executable(test_triplet_graph
     src/test_triplet_graph.cpp
-    src/World.cpp
 )
 target_link_libraries(test_triplet_graph ${catkin_LIBRARIES})
 
@@ -83,5 +80,11 @@ add_executable(test_graph_reader_writer
     src/test_graph_reader_writer.cpp
 )
 target_link_libraries(test_graph_reader_writer ${catkin_LIBRARIES})
+
+add_executable(laser_processor
+    src/World.cpp
+    src/laser_processor.cpp
+)
+target_link_libraries(laser_processor graph_simulator ${catkin_LIBRARIES})
 
 
