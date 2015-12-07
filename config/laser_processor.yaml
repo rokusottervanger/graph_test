@@ -11,11 +11,20 @@ corner_detector:
         lines:
             name: "corner_lines"
             color: {r: 0, g: 0, b: 1}
+simulator:
+    enabled: 0
+    filename: "robotics_testlab_B.yaml"
+    initial_nodes:
+      - id: "ab29032c2621f38d"
+        position: {x: 1, y: 0}
+      - id: "d6cce35c487a58fe"
+        position: {x: 1, y: 0.778615}
+    teleop_topic: "amigo/base/references"
 odom_tracker:
     map_frame: "map"
     odom_frame: "amigo/odom"
     base_link_frame: "amigo/base_laser"
-graph_filename: "robotics_testlab_B.yaml"
+graph_filename: "robotics_testlab_B_out.yaml"
 visualization:
     points:
         name: "graph_nodes"

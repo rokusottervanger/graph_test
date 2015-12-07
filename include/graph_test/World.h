@@ -7,6 +7,7 @@
 #include <triplet_graph/Measurement.h>
 #include <ros/node_handle.h>
 #include <triplet_graph/Visualizer.h>
+#include <geometry_msgs/Twist.h>
 
 // -----------------------------------------------------------------------------------------------
 // Ad Hoc simulator
@@ -26,7 +27,7 @@ struct Node
 class World
 {
 public:
-    World(){}
+    World();
 
     void addNode(Node&);
 
@@ -42,6 +43,11 @@ private:
     geo::Pose3D robot_pose_;
     std::string sensor_frame_id_;
     triplet_graph::Visualizer visualizer_;
+
+    ros::NodeHandle nh_;
+    ros::Subscriber sub_teleop_;
+    void teleopCallback(const geometry_msgs::Twist::ConstPtr &cmd_vel);
+    ros::Time time_;
 };
 
 }

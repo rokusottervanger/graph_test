@@ -5,9 +5,12 @@
 #include <triplet_graph/Path.h>
 
 #include <visualization_msgs/Marker.h>
+#include <ros/node_handle.h>
 
 namespace graph_simulator
 {
+
+World::World(): nh_("~") {}
 
 void World::addNode(Node& node)
 {
@@ -126,44 +129,54 @@ bool World::configure(tue::Configuration &config)
             nodes_.push_back(node);
         }
         config.endArray();
+
+        // - - - - - - - - - - - - - - - - - - - - - - - -
+        // Load robot pose
+
+        if (config.readGroup("robot", tue::REQUIRED))
+        {
+            robot_pose_ = geo::Pose3D(0,0,0);
+            if (config.readGroup("initial_pose", tue::REQUIRED))
+            {
+                config.value("x", robot_pose_.t.x);
+                config.value("y", robot_pose_.t.y);
+                config.value("z", robot_pose_.t.z,tue::OPTIONAL);
+
+                double r = 0, p = 0, y = 0;
+                config.value("roll", r, tue::OPTIONAL);
+                config.value("pitch", p, tue::OPTIONAL);
+                config.value("yaw", y, tue::OPTIONAL);
+                robot_pose_.setRPY(r,p,y);
+                config.endGroup();
+                std::cout << "[WORLD] Configure: Added robot at pose (x,y,theta) = ("
+                          << robot_pose_.t.x << ","
+                          << robot_pose_.t.y << ","
+                          << y << ")" << std::endl;
+            }
+            else
+                std::cout << "[WORLD] Configure: WARNING: Found robot, but not its initial pose" << std::endl;
+            config.value("sensor_frame_id", sensor_frame_id_, tue::REQUIRED);
+            config.endGroup();
+        }
+        else
+        {
+            std::cout << "[WORLD] Configure: No initial pose of robot found, returning false!" << std::endl;
+            return false;
+        }
     }
 
     std::cout << "[WORLD] Configure: DEBUG Sim world now contains " << nodes_.size() << " nodes." << std::endl;
 
 
     // - - - - - - - - - - - - - - - - - - - - - - - -
-    // Load robot pose
+    // Configure teleop listener
 
-    if (config.readGroup("robot", tue::REQUIRED))
-    {
-        robot_pose_ = geo::Pose3D(0,0,0);
-        if (config.readGroup("initial_pose", tue::REQUIRED))
-        {
-            config.value("x", robot_pose_.t.x);
-            config.value("y", robot_pose_.t.y);
-            config.value("z", robot_pose_.t.z,tue::OPTIONAL);
+    std::string teleop_topic = "";
+    config.value("teleop_topic",teleop_topic);
+    ros::NodeHandle nh;
+    sub_teleop_ = nh.subscribe<geometry_msgs::Twist>(teleop_topic, 1, &World::teleopCallback, this);
 
-            double r = 0, p = 0, y = 0;
-            config.value("roll", r, tue::OPTIONAL);
-            config.value("pitch", p, tue::OPTIONAL);
-            config.value("yaw", y, tue::OPTIONAL);
-            robot_pose_.setRPY(r,p,y);
-            config.endGroup();
-            std::cout << "[WORLD] Configure: Added robot at pose (x,y,theta) = ("
-                      << robot_pose_.t.x << ","
-                      << robot_pose_.t.y << ","
-                      << y << ")" << std::endl;
-        }
-        else
-            std::cout << "[WORLD] Configure: WARNING: Found robot, but not its initial pose" << std::endl;
-        config.value("sensor_frame_id", sensor_frame_id_, tue::REQUIRED);
-        config.endGroup();
-    }
-    else
-    {
-        std::cout << "[WORLD] Configure: No initial pose of robot found, returning false!" << std::endl;
-        return false;
-    }
+    time_ = ros::Time::now();
 
 
     // - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,7 +188,17 @@ bool World::configure(tue::Configuration &config)
     return true;
 }
 
-// TODO: make it possible to move the robot using arrow keys
+void World::teleopCallback(const geometry_msgs::Twist::ConstPtr &cmd_vel)
+{
+    geo::Transform delta(cmd_vel->linear.x,
+                         cmd_vel->linear.y,
+                         0,0,0,
+                         cmd_vel->angular.z);
+
+    robot_pose_ = delta * robot_pose_;
+    std::cout << "Robot pose: " << robot_pose_ << std::endl;
+    return;
+}
 
 void World::step(triplet_graph::Measurement &measurement)
 {

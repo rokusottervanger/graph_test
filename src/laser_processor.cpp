@@ -55,20 +55,37 @@ int main(int argc, char** argv)
     if ( config.readGroup("simulator") && config.value("enabled",simulate,tue::OPTIONAL) && simulate == 1 )
     {
         std::cout << "Configuring simulator..." << std::endl;
-        sim_world.configure(config);
+        if ( !sim_world.configure(config) )
+            return -1;
         config.endGroup();
         std::cout << "Done!" << std::endl << std::endl;
     }
-    else
+    else if ( config.endGroup() && config.readGroup("corner_detector") )
     {
         std::cout << "Configuring corner detector..." << std::endl;
-        cornerDetector.configure(config);
+        if ( !cornerDetector.configure(config) )
+            return -1;
         std::cout << "Done!" << std::endl << std::endl;
+        config.endGroup();
+    }
+    else
+    {
+        std::cout << "\033[31m" << "No config found for corner detector nor for a simulator" << "\033[0m" << std::endl;
+        return -1;
     }
 
-    std::cout << "Configuring odom tracker..." << std::endl;
-    odomTracker.configure(config);
-    std::cout << "Done!" << std::endl << std::endl;
+    if ( config.readGroup("odom_tracker") )
+    {
+        std::cout << "Configuring odom tracker..." << std::endl;
+        odomTracker.configure(config);
+        std::cout << "Done!" << std::endl << std::endl;
+        config.endGroup();
+    }
+    else
+    {
+        std::cout << "\033[31m" << "[ODOM TRACKER] Configure: No configuration for odom tracker found!" << "\033[0m" << std::endl;
+        return -1;
+    }
 
     if ( config.readGroup("visualization") )
     {
