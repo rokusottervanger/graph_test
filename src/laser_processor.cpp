@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
 
     // - - - - - - - - - - - - - - - - - -
-    // Configure everything
+    // Configure corner detection
 
     int simulate = 1;
     if ( config.readGroup("simulator") && config.value("enabled",simulate,tue::OPTIONAL) && simulate == 1 )
@@ -74,6 +74,10 @@ int main(int argc, char** argv)
         return -1;
     }
 
+
+    // - - - - - - - - - - - - - - - - - -
+    // Configure odom tracking
+
     if ( config.readGroup("odom_tracker") )
     {
         std::cout << "Configuring odom tracker..." << std::endl;
@@ -86,6 +90,10 @@ int main(int argc, char** argv)
         std::cout << "\033[31m" << "[ODOM TRACKER] Configure: No configuration for odom tracker found!" << "\033[0m" << std::endl;
         return -1;
     }
+
+
+    // - - - - - - - - - - - - - - - - - -
+    // Configure visualization if set
 
     if ( config.readGroup("visualization") )
     {
