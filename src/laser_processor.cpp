@@ -103,6 +103,19 @@ int main(int argc, char** argv)
         std::cout << "Done!" << std::endl << std::endl;
     }
 
+    double max_association_distance;
+
+    if ( config.readGroup("association") )
+    {
+        config.value("max_association_distance", max_association_distance );
+        config.endGroup();
+    }
+    else
+    {
+        std::cout << "\033[31m" << "[ODOM TRACKER] Configure: No configuration for association found!" << "\033[0m" << std::endl;
+        return -1;
+    }
+
     config.value("graph_filename",graph_filename);
 
     ros::Rate loop_rate(15);
@@ -158,7 +171,7 @@ int main(int argc, char** argv)
         // Associate
 
         std::cout << "Trying to associate..." << std::endl;
-        triplet_graph::associate( graph, measurement, associations, unassociated_points, delta, target_node, path );
+        triplet_graph::associate( graph, measurement, associations, unassociated_points, delta, target_node, path, max_association_distance);
         std::cout << "Associated " << associations.nodes.size() << " nodes" << std::endl << std::endl;
         if ( associations.nodes.size() > 1 )
             tmp_odom = geo::Transform::identity();
