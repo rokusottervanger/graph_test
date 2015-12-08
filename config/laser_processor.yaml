@@ -1,6 +1,6 @@
 corner_detector:
     laser_topic: "/amigo/base_laser/scan"
-    corner_threshold: 0.07
+    corner_threshold: 0.1
     step_size: 70
     frame_id: "/amigo/base_laser"
     jump_size: 0.05
@@ -12,7 +12,7 @@ corner_detector:
             name: "corner_lines"
             color: {r: 0, g: 0, b: 1}
 association:
-    max_association_distance: 0.2
+    max_association_distance: 0.05
 simulator:
     enabled: 0
     filename: "robotics_testlab_B.yaml"
@@ -28,6 +28,7 @@ odom_tracker:
     base_link_frame: "amigo/base_laser"
 graph_filename: "robotics_testlab_B_out.yaml"
 visualization:
+    lifetime: 1.0
     points:
         name: "graph_nodes"
         color: {r: 1, g: 0, b: 0}
