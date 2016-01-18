@@ -179,6 +179,9 @@ int main(int argc, char** argv)
         std::cout << "path.size() = " << path.size() << std::endl;
         std::cout << "graph.size() = " << graph.size() << std::endl;
 
+        if ( loop > 1 && measurement.points.size() > 0 && std::find(path.begin(),path.end(),0) == path.end())
+            return -1;
+
         // TODO: Make function to easily visualize entire graph
 
         // - - - - - - - - - - - - - - - - - -
@@ -195,15 +198,15 @@ int main(int argc, char** argv)
 
 //        int graph_size = graph.size();
 
-        if ( loop < 3 && associations.measurement.points.size() < 2 || associations.measurement.points.size() > 1 )
-        {
+//        if ( (loop < 3 && associations.measurement.points.size() < 2 ) )
+//        {
             std::cout << "Extending graph with " << unassociated_points.points.size() << " nodes..." << std::endl;
 
             triplet_graph::extendGraph( graph, unassociated_points, associations );
 
             std::cout << "Done!" << std::endl;
             loop ++;
-        }
+//        }
 
 
         // - - - - - - - - - - - - - - - - - -
