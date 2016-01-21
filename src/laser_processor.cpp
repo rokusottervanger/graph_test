@@ -172,14 +172,17 @@ int main(int argc, char** argv)
 
         std::cout << "Trying to associate..." << std::endl;
         triplet_graph::associate( graph, measurement, associations, unassociated_points, delta, target_node, path, max_association_distance);
-        std::cout << "Associated " << associations.nodes.size() << " nodes" << std::endl << std::endl;
+        std::cout << "Associated nodes:" << std::endl;
+        for ( std::vector<int>::iterator it = associations.nodes.begin(); it != associations.nodes.end(); ++it )
+            std::cout << *it << std::endl;
+
         if ( associations.nodes.size() > 1 )
             tmp_odom = geo::Transform::identity();
 
         std::cout << "path.size() = " << path.size() << std::endl;
         std::cout << "graph.size() = " << graph.size() << std::endl;
 
-        if ( loop > 1 && measurement.points.size() > 0 && std::find(path.begin(),path.end(),0) == path.end())
+        if ( loop > 1 && measurement.points.size() > 0 && graph.size() != path.size())
             return -1;
 
         // TODO: Make function to easily visualize entire graph
@@ -188,9 +191,9 @@ int main(int argc, char** argv)
         // Update graph
 
         // Updates existing edges and adds edges between measured points
-//        std::cout << "Updating graph..." << std::endl;
-//        triplet_graph::updateGraph( graph, associations );
-//        std::cout << "Done!" << std::endl << std::endl;
+        std::cout << "Updating graph..." << std::endl;
+        triplet_graph::updateGraph( graph, associations );
+        std::cout << "Done!" << std::endl << std::endl;
 
 
         // - - - - - - - - - - - - - - - - - -
