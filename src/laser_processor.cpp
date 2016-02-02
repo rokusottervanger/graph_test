@@ -45,8 +45,6 @@ int main(int argc, char** argv)
     triplet_graph::OdomTracker odomTracker;
     triplet_graph::Visualizer visualizer;
 
-    geo::Transform tmp_odom = geo::Transform::identity();
-
 
     // - - - - - - - - - - - - - - - - - -
     // Configure corner detection
@@ -123,6 +121,9 @@ int main(int argc, char** argv)
     int target_node = -1;
     int loop = 0;
 
+    triplet_graph::AssociatedMeasurement old_associations;
+    bool localized = true;
+
     while (ros::ok())
     {
 
@@ -157,27 +158,45 @@ int main(int argc, char** argv)
 
 
         // - - - - - - - - - - - - - - - - - -
-        // Get odom data
+        // Update position using odom data
 
         std::cout << "Getting odom delta" << std::endl;
         odomTracker.getDelta(delta,measurement.time_stamp);
-        tmp_odom = tmp_odom * delta;
+
+        old_associations = delta.inverse() * old_associations;
+        associations = old_associations;
+        std::cout << "Old_associations.size() = " << old_associations.nodes.size() << std::endl;
         std::cout << "Done" << std::endl << std::endl;
-//        std::cout << "Got odom delta: " << delta << std::endl;
-//        std::cout << "Current tmp_odom: " << tmp_odom << std::endl << std::endl;
 
 
         // - - - - - - - - - - - - - - - - - -
         // Associate
 
         std::cout << "Trying to associate..." << std::endl;
-        triplet_graph::associate( graph, measurement, associations, unassociated_points, delta, target_node, path, max_association_distance);
+        triplet_graph::associate( graph, measurement, associations, unassociated_points, target_node, path, max_association_distance);
         std::cout << "Associated nodes:" << std::endl;
         for ( std::vector<int>::iterator it = associations.nodes.begin(); it != associations.nodes.end(); ++it )
             std::cout << *it << std::endl;
 
-        if ( associations.nodes.size() > 1 )
-            tmp_odom = geo::Transform::identity();
+        // Check if localization was succesful
+        if ( associations.nodes.size() >= 2 )
+        {
+            std::vector<triplet_graph::Node> nodes = graph.getNodes();
+            for ( std::vector<int>::iterator it_1 = associations.nodes.begin(); it_1 != associations.nodes.end(); ++it_1 )
+            {
+                for ( std::vector<int>::iterator it_2 = it_1+1 ; it_2 != associations.nodes.end(); ++it_2 )
+                {
+                    int num_of_common_trips = nodes[*it_1].tripletsByPeer(*it_2).size();
+                    if ( num_of_common_trips > 0 )
+                    {
+                        localized = true;
+                        std::cout << "[GRAPH] " << associations.nodes.size() << " associations found, state is: localized" << std::endl;
+                        goto done;
+                    }
+                }
+            }
+        }
+        done:
 
         std::cout << "path.size() = " << path.size() << std::endl;
         std::cout << "graph.size() = " << graph.size() << std::endl;
@@ -185,35 +204,45 @@ int main(int argc, char** argv)
         if ( loop > 1 && measurement.points.size() > 0 && graph.size() != path.size())
             return -1;
 
-        // TODO: Make function to easily visualize entire graph
+        // If successful, store the associations for the next run
+        if ( localized )
+            old_associations = associations;
+
+        // Proceed using latest associations that led to localization
+        associations = old_associations;
+
 
         // - - - - - - - - - - - - - - - - - -
         // Update graph
 
-        // Updates existing edges and adds edges between measured points
-        std::cout << "Updating graph..." << std::endl;
-        triplet_graph::updateGraph( graph, associations );
-        std::cout << "Done!" << std::endl << std::endl;
+        // Only necessary for new associated measurements
+        if ( localized )
+        {
+            // Updates existing edges and adds edges between measured points
+            std::cout << "Updating graph..." << std::endl;
+            triplet_graph::updateGraph( graph, associations );
+            std::cout << "Done!" << std::endl << std::endl;
+        }
 
 
         // - - - - - - - - - - - - - - - - - -
         // Extend graph
 
-//        int graph_size = graph.size();
+        std::cout << "Extending graph with " << unassociated_points.points.size() << " nodes..." << std::endl;
 
-//        if ( (loop < 3 && associations.measurement.points.size() < 2 ) )
-//        {
-            std::cout << "Extending graph with " << unassociated_points.points.size() << " nodes..." << std::endl;
+        triplet_graph::extendGraph( graph, unassociated_points, associations );
 
-            triplet_graph::extendGraph( graph, unassociated_points, associations );
+        // extendgraph may add nodes to associations, so store those with the latest localizable associations.
+        old_associations = associations;
 
-            std::cout << "Done!" << std::endl;
-            loop ++;
-//        }
+        std::cout << "Done!" << std::endl;
+        loop ++;
 
 
         // - - - - - - - - - - - - - - - - - -
         // Visualize graph
+
+        // TODO: Make function to easily visualize entire graph
 
         // Calculate positions again to visualize them in rviz:
 //        std::vector<geo::Vec3d> positions(graph.size());

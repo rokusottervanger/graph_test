@@ -167,7 +167,7 @@ int main(int argc, char** argv)
     geo::Pose3D initial_pose(0,0,0);
     Path path;
 
-    associate(graph, measurement, associations, unassociated_points, initial_pose, -1, path, 0.1); // TODO: magic number for max association distance
+    associate(graph, measurement, associations, unassociated_points, -1, path, 0.1); // TODO: magic number for max association distance
 
     // Show which nodes were succesfully associated:
     std::cout << "Managed to associate " << associations.nodes.size() << " nodes:" << std::endl;
