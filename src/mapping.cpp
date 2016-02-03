@@ -6,8 +6,6 @@
 #include <triplet_graph/Visualizer.h>
 #include <triplet_graph/Path.h>
 
-#include "graph_test/World.h"
-
 #include <tue/profiling/timer.h>
 #include <tue/config/configuration.h>
 
@@ -23,7 +21,7 @@ int main(int argc, char** argv)
     // Parse arguments
     if ( argc < 2 )
     {
-        std::cout << "Usage: \n\n        laser_processor LASER_PROCESSOR_CONFIG.yaml" << std::endl;
+        std::cout << "Usage: \n\n        laser_processor MAPPING_CONFIG.yaml GRAPH_CONFIG.yaml" << std::endl;
         return 1;
     }
 
@@ -40,8 +38,6 @@ int main(int argc, char** argv)
     triplet_graph::Graph graph;
 
     triplet_graph::CornerDetector cornerDetector;
-    graph_simulator::World sim_world;
-
     triplet_graph::OdomTracker odomTracker;
     triplet_graph::Visualizer visualizer;
 
@@ -49,16 +45,7 @@ int main(int argc, char** argv)
     // - - - - - - - - - - - - - - - - - -
     // Configure corner detection
 
-    int simulate = 1;
-    if ( config.readGroup("simulator") && config.value("enabled",simulate,tue::OPTIONAL) && simulate == 1 )
-    {
-        std::cout << "Configuring simulator..." << std::endl;
-        if ( !sim_world.configure(config) )
-            return -1;
-        config.endGroup();
-        std::cout << "Done!" << std::endl << std::endl;
-    }
-    else if ( config.endGroup() && config.readGroup("corner_detector") )
+    if ( config.endGroup() && config.readGroup("corner_detector") )
     {
         std::cout << "Configuring corner detector..." << std::endl;
         if ( !cornerDetector.configure(config) )
@@ -101,6 +88,10 @@ int main(int argc, char** argv)
         std::cout << "Done!" << std::endl << std::endl;
     }
 
+
+    // - - - - - - - - - - - - - - - - - -
+    // Configure association
+
     double max_association_distance;
 
     if ( config.readGroup("association") )
@@ -121,6 +112,7 @@ int main(int argc, char** argv)
     int target_node = -1;
     int loop = 0;
 
+    // old_associations are always the latest associations that yield succesful localization
     triplet_graph::AssociatedMeasurement old_associations;
     bool localized = true;
 
@@ -150,10 +142,7 @@ int main(int argc, char** argv)
         // Find corners
 
         std::cout << "Detecting corners" << std::endl;
-        if (simulate)
-            sim_world.step(measurement);
-        else
-            cornerDetector.process(measurement);
+        cornerDetector.process(measurement);
         std::cout << measurement.points.size() << " corners detected" << std::endl << std::endl;
 
 
@@ -163,9 +152,10 @@ int main(int argc, char** argv)
         std::cout << "Getting odom delta" << std::endl;
         odomTracker.getDelta(delta,measurement.time_stamp);
 
+
         old_associations = delta.inverse() * old_associations;
         associations = old_associations;
-        std::cout << "Old_associations.size() = " << old_associations.nodes.size() << std::endl;
+        std::cout << "old_associations.size() = " << old_associations.nodes.size() << std::endl;
         std::cout << "Done" << std::endl << std::endl;
 
 
@@ -195,18 +185,27 @@ int main(int argc, char** argv)
                     }
                 }
             }
+            std::cout << "[GRAPH] no common triplets found in " << associations.nodes.size() << " associations, state is: not localized" << std::endl;
+            localized = false;
+        }
+        else
+        {
+            std::cout << "[GRAPH] " << associations.nodes.size() << " associations found, state is: not localized" << std::endl;
+            localized = false;
         }
         done:
 
         std::cout << "path.size() = " << path.size() << std::endl;
         std::cout << "graph.size() = " << graph.size() << std::endl;
 
-        if ( loop > 1 && measurement.points.size() > 0 && graph.size() != path.size())
-            return -1;
+//        if ( loop > 1 && measurement.points.size() > 0 && graph.size() != path.size())
+//            return -1;
 
         // If successful, store the associations for the next run
         if ( localized )
             old_associations = associations;
+
+        std::cout << "old_associations' size after association: " << old_associations.nodes.size() << std::endl;
 
         // Proceed using latest associations that led to localization
         associations = old_associations;
@@ -233,7 +232,10 @@ int main(int argc, char** argv)
         triplet_graph::extendGraph( graph, unassociated_points, associations );
 
         // extendgraph may add nodes to associations, so store those with the latest localizable associations.
-        old_associations = associations;
+        if ( localized || loop <= 2 )
+            old_associations = associations;
+
+        std::cout << "old_associations' size after extending: " << old_associations.nodes.size() << std::endl;
 
         std::cout << "Done!" << std::endl;
         loop ++;

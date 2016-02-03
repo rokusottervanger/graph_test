@@ -28,7 +28,7 @@ odom_tracker:
     base_link_frame: "amigo/base_laser"
 graph_filename: "robotics_testlab_B_out.yaml"
 visualization:
-#    lifetime: 1.0
+    lifetime: 1.0
     points:
         name: "graph_nodes"
         color: {r: 1, g: 0, b: 0}

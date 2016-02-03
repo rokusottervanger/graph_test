@@ -81,10 +81,12 @@ add_executable(test_graph_reader_writer
 )
 target_link_libraries(test_graph_reader_writer ${catkin_LIBRARIES})
 
-add_executable(laser_processor
-    src/World.cpp
-    src/laser_processor.cpp
+add_executable(mapping
+    src/mapping.cpp
 )
-target_link_libraries(laser_processor graph_simulator ${catkin_LIBRARIES})
+target_link_libraries(mapping ${catkin_LIBRARIES})
 
-
+add_executable(localization
+    src/localization.cpp
+)
+target_link_libraries(localization ${catkin_LIBRARIES})
