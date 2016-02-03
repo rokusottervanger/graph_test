@@ -164,9 +164,6 @@ int main(int argc, char** argv)
 
         std::cout << "Trying to associate..." << std::endl;
         triplet_graph::associate( graph, measurement, associations, unassociated_points, target_node, path, max_association_distance);
-        std::cout << "Associated nodes:" << std::endl;
-        for ( std::vector<int>::iterator it = associations.nodes.begin(); it != associations.nodes.end(); ++it )
-            std::cout << *it << std::endl;
 
         // Check if localization was succesful
         if ( associations.nodes.size() >= 2 )
@@ -180,17 +177,17 @@ int main(int argc, char** argv)
                     if ( num_of_common_trips > 0 )
                     {
                         localized = true;
-                        std::cout << "[GRAPH] " << associations.nodes.size() << " associations found, state is: localized" << std::endl;
+                        std::cout << associations.nodes.size() << " associations found, state is: localized" << std::endl;
                         goto done;
                     }
                 }
             }
-            std::cout << "[GRAPH] no common triplets found in " << associations.nodes.size() << " associations, state is: not localized" << std::endl;
+            std::cout << "No common triplets found in " << associations.nodes.size() << " associations, state is: not localized" << std::endl;
             localized = false;
         }
         else
         {
-            std::cout << "[GRAPH] " << associations.nodes.size() << " associations found, state is: not localized" << std::endl;
+            std::cout << associations.nodes.size() << " associations found, state is: not localized" << std::endl;
             localized = false;
         }
         done:

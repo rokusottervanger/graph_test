@@ -116,13 +116,41 @@ int main(int argc, char** argv)
         std::cout << "Loaded!" << std::endl;
     }
 
+    // - - - - - - - - - - - - - - - - - -
+    // Configure initial pose
+
+    bool localized;
+    triplet_graph::AssociatedMeasurement old_associations;
+
+    if ( config.readArray("initial_pose") )
+    {
+        while ( config.nextArrayItem() )
+        {
+            int node;
+            config.value("node",node);
+            old_associations.nodes.push_back(node);
+
+            double x,y;
+            if ( config.readGroup("position") )
+            {
+                config.value("x",x);
+                config.value("y",y);
+                config.endGroup();
+            }
+            geo::Vec3d point(x,y,0.0);
+            old_associations.measurement.points.push_back(point);
+            old_associations.measurement.frame_id = "/amigo/base_laser"; // TODO: hack!
+            old_associations.measurement.time_stamp = ros::Time::now();
+        }
+        config.endArray();
+    }
+
     ros::Rate loop_rate(15);
 
     int target_node = -1;
 
     // old_associations are always the latest associations that yield succesful localization
-    triplet_graph::AssociatedMeasurement old_associations;
-    bool localized = true;
+
 
     while (ros::ok())
     {
@@ -171,9 +199,6 @@ int main(int argc, char** argv)
 
         std::cout << "Trying to associate..." << std::endl;
         triplet_graph::associate( graph, measurement, associations, unassociated_points, target_node, path, max_association_distance);
-        std::cout << "Associated nodes:" << std::endl;
-        for ( std::vector<int>::iterator it = associations.nodes.begin(); it != associations.nodes.end(); ++it )
-            std::cout << *it << std::endl;
 
         // Check if localization was succesful
         if ( associations.nodes.size() >= 2 )
@@ -187,17 +212,17 @@ int main(int argc, char** argv)
                     if ( num_of_common_trips > 0 )
                     {
                         localized = true;
-                        std::cout << "[GRAPH] " << associations.nodes.size() << " associations found, state is: localized" << std::endl;
+                        std::cout << associations.nodes.size() << " associations found, state is: localized" << std::endl;
                         goto done;
                     }
                 }
             }
-            std::cout << "[GRAPH] no common triplets found in " << associations.nodes.size() << " associations, state is: not localized" << std::endl;
+            std::cout << "No common triplets found in " << associations.nodes.size() << " associations, state is: not localized" << std::endl;
             localized = false;
         }
         else
         {
-            std::cout << "[GRAPH] " << associations.nodes.size() << " associations found, state is: not localized" << std::endl;
+            std::cout << associations.nodes.size() << " associations found, state is: not localized" << std::endl;
             localized = false;
         }
         done:
