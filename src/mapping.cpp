@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     // Parse arguments
     if ( argc < 2 )
     {
-        std::cout << "Usage: \n\n        laser_processor MAPPING_CONFIG.yaml GRAPH_CONFIG.yaml" << std::endl;
+        std::cout << "Usage: \n\n        laser_processor MAPPING_CONFIG.yaml" << std::endl;
         return 1;
     }
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     // - - - - - - - - - - - - - - - - - -
     // Configure corner detection
 
-    if ( config.endGroup() && config.readGroup("corner_detector") )
+    if ( config.readGroup("corner_detector") )
     {
         std::cout << "Configuring corner detector..." << std::endl;
         if ( !cornerDetector.configure(config) )

@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     // Parse arguments
     if ( argc < 2 )
     {
-        std::cout << "Usage: \n\n        laser_processor LOCALIZATION_CONFIG.yaml GRAPH_CONFIG.yaml" << std::endl;
+        std::cout << "Usage: \n\n        laser_processor LOCALIZATION_CONFIG.yaml" << std::endl;
         return 1;
     }
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     // - - - - - - - - - - - - - - - - - -
     // Configure corner detection
 
-    if ( config.endGroup() && config.readGroup("corner_detector") )
+    if ( config.readGroup("corner_detector") )
     {
         std::cout << "Configuring corner detector..." << std::endl;
         if ( !cornerDetector.configure(config) )
@@ -160,7 +160,6 @@ int main(int argc, char** argv)
         std::cout << "Getting odom delta" << std::endl;
         odomTracker.getDelta(delta,measurement.time_stamp);
 
-
         old_associations = delta.inverse() * old_associations;
         associations = old_associations;
         std::cout << "old_associations.size() = " << old_associations.nodes.size() << std::endl;
@@ -230,14 +229,6 @@ int main(int argc, char** argv)
 
         loop_rate.sleep();
     }
-
-
-    // - - - - - - - - - - - - - - - - - -
-    // Save graph
-
-    std::cout << "Writing graph config to disk..." << std::endl;
-    triplet_graph::save(graph, graph_filename);
-    std::cout << "Saved!" << std::endl;
 }
 
 
